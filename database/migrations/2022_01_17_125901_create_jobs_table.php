@@ -18,8 +18,10 @@ class CreateJobsTable extends Migration
             $table->string('job_title');
             $table->string('job_slug');
             $table->decimal('job_bounty');
-            $table->bigInteger('company_id');
+            $table->bigInteger('company_id')->unsigned();
             $table->timestamps();
+
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
         });
     }
 

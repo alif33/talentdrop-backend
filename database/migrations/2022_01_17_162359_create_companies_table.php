@@ -16,10 +16,6 @@ class CreateCompaniesTable extends Migration
         Schema::create('companies', function (Blueprint $table) {
             $table->id();
             $table->string('company_name')->nullable();
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password')->nullable();
-            $table->rememberToken();
             $table->string('company_description')->nullable();
             $table->string('company_logo')->nullable();
             $table->string('website_url')->nullable();
@@ -27,11 +23,13 @@ class CreateCompaniesTable extends Migration
             $table->string('crunchbase_url')->nullable();
             $table->string('founded_date')->nullable();
             $table->bigInteger('timezone_id')->unsigned();
-            $table->bigInteger('location_id')->unsigned();
-            $table->enum('status',['APPLY', 'APPROVE', 'VERIFY', 'ACTIVE'])->default('APPLY');
+            $table->bigInteger('country_id')->unsigned();
+            $table->bigInteger('state_id')->unsigned();
+            $table->bigInteger('social_id')->unsigned();
+            $table->boolean('status')->default(0);
             $table->timestamps();
             $table->foreign('timezone_id')->references('id')->on('timezones')->onDelete('cascade');
-            $table->foreign('location_id')->references('id')->on('locations')->onDelete('cascade');
+            $table->foreign('social_id')->references('id')->on('socials')->onDelete('cascade');
         });
     }
 

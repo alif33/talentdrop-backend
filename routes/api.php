@@ -3,8 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\LocationController;
 use App\Http\Controllers\SetupController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TimezoneController;
@@ -45,16 +47,14 @@ Route::group([
 // Company
 
 Route::group([
-    'prefix' => 'company'
+    'prefix' => '/'
 
 ], function () use ($router) {
 
-    Route::post('/login', [UserController::class, 'login']);
-    Route::post('/register', [UserController::class, 'register']);
-    Route::post('/logout', [UserController::class, 'logout']);
-    Route::get('/verify', [MailController::class, 'verification']);
-    Route::post('/refresh', [UserController::class, 'refresh']);
-    Route::post('/profile', [UserController::class, 'profile']);
+    Route::get('/companies', [CompanyController::class, 'index']);
+    Route::post('/company', [CompanyController::class, 'store']);
+    Route::put('/company/{id}', [CompanyController::class, 'update']);
+    Route::delete('/company/{id}', [CompanyController::class, 'delete']);
 
 });
 
@@ -116,6 +116,32 @@ Route::group(
     }
 );
 
+// Location
+
+Route::group(
+    [
+        'prefix' => 'location'
+    ],
+    function ($router) {
+        Route::get('/countries', [LocationController::class, 'countries']);
+        Route::get('/states/{id}', [LocationController::class, 'states']);
+        Route::get('/cities/{id}', [LocationController::class, 'cities']);
+    }
+);
+
+// Candidate
+
+Route::group(
+    [
+        'prefix' => '/'
+    ],
+    function ($router) {
+        Route::post('/candidate', [CandidateController::class, 'store']);
+        Route::put('/candidate/{id}', [CandidateController::class, 'update']);
+        Route::delete('/candidate/{id}', [CandidateController::class, 'destory']);
+    }
+);
+
 
 // setup 
 
@@ -129,7 +155,7 @@ Route::group(
 );
 
 
-// others 
+// others
 
 Route::group(
     [

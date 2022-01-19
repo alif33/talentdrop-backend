@@ -7,138 +7,132 @@ use App\Models\Social;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class CompanyController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:company', ['except' => ['login', 'register']]);
+    // public function __construct()
+    // {
+    //     $this->middleware('auth:admin', ['except' => ['index']]);
+    // }
 
+    public function index()
+    {
+        return Company::orderBy('id', 'DESC')->get();
     }
 
-    protected function guard()
+    public function store(Request $request)
     {
-        return Auth::guard('company');
-    }
-
-    protected function respondWithToken($token)
-    {
-        return response()->json(
-            [   
-                'success'        => true,
-                'token'          => $token,
-                'token_type'     => 'bearer',
-                'token_validity' => ($this->guard()->factory()->getTTL() * 60),
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'facebook_url'  => 'required|string',
+                'twitter_url' => 'string',
+                'linkedin_url' => 'string',
+                'instagram_url' => 'string',
+                'country_id' => 'required|numeric',
+                'state_id' => 'required|numeric',
+                'company_name' => 'required|string|between:2,50',
+                'company_description' => 'required|string',
+                'company_logo' => 'required',
+                'website_url' => 'required|string',
+                'employee_number' => 'required|string',
+                'founded_date' => 'required',
+                'timezone_id' => 'numeric',
             ]
         );
 
-    }
+        if ($validator->fails()) {
+            return response()->json(
+                [$validator->errors()],
+                422
+            );
+        }
 
-public function login(Request $request)
-{
-    $validator = Validator::make(
-        $request->all(),
-        [
-            'email'    => 'required|email',
-            'password' => 'required|string|min:6',
-        ]
-    );
-
-    if ($validator->fails()) {
-        return response()->json($validator->errors(), 400);
-    }
-
-    $token_validity = (24 * 60);
-
-    $this->guard()->factory()->setTTL($token_validity);
-
-
-    // return $this->guard()->attempt($validator->validated());
-
-    if (!$token = $this->guard()->attempt($validator->validated())) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Invalid Creadentials'
-        ], 401);
-    }
-
-    return $this->respondWithToken($token);
-
-}
-
-
-public function apply(Request $request)
-{
-    $validator = Validator::make(
-        $request->all(),
-        [
-            'company_name'     => 'required|string|between:2,100',
-            'website_url'    => 'required|string|between:2,300',
-            'email'    => 'required|string|between:2,300',
-        ]
-    );
-
-    if ($validator->fails()) {
-        return response()->json(
-            [$validator->errors()],
-            422
+        $social = Social::create(
+            $validator->validated()
         );
-    }
-}
 
-
-public function register(Request $request)
-{   
-
-    $validator = Validator::make(
-        $request->all(),
-        [
-            'name'     => 'required|string|between:2,100',
-            'email'    => 'required|email|unique:admins',
-            'password' => 'required|confirmed|min:6',
-        ]
-    );
-
-    if ($validator->fails()) {
-        return response()->json(
-            [$validator->errors()],
-            422
+        $company = Company::create(
+            array_merge(
+                [
+                    'social_id' => $social->id,
+                ],
+                $validator->validated()
+            )
         );
+
+        if ($company) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Tag created successfully.'
+            ], 201);
+        }
     }
 
-    $user = Company::create(
-        array_merge(
-            $validator->validated(),
-            ['password' => bcrypt($request->password)]
-        )
-    );
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'facebook_url'  => 'required|string',
+                'twitter_url' => 'string',
+                'linkedin_url' => 'string',
+                'instagram_url' => 'string',
+                'country_id' => 'required|numeric',
+                'state_id' => 'required|numeric',
+                'company_name' => 'required|string|between:2,50',
+                'company_description' => 'required|string',
+                'company_logo' => 'required',
+                'website_url' => 'required|string',
+                'employee_number' => 'required|string',
+                'founded_date' => 'required',
+                'timezone_id' => 'numeric',
+            ]
+        );
 
-    return response()->json(['message' => 'Admin created successfully', 'user' => $user]);
+        if ($validator->fails()) {
+            return response()->json(
+                [$validator->errors()],
+                422
+            );
+        }
 
-}
+        // $social = Social::create(
+        //     $validator->validated()
+        // );
 
-public function reports(){
-    return Report::orderBy('id', 'DESC')->get();
-}
+        // $company = Company::findOrFail($id)->update(
+        //     array_merge(
+        //         [
+        //             'social_id' => $social->id,
+        //         ],
+        //         $validator->validated()
+        //     )
+        // );
 
-public function logout()
-{
-    $this->guard()->logout();
+        // if ($company) {
+        //     return response()->json([
+        //         'success' => true,
+        //         'message' => 'Company updated successfully.'
+        //     ], 201);
+        // }
+    }
+    
+    public function destory($id)
+    {
+       $tag = Company::findOrFail($id);
 
-    return response()->json(['message' => 'User logged out successfully']);
+       if($tag)
+       {
+           $tag->delete();
+           return response()->json(
+                ['message'=>'Company deleted successfully.'],
+                422
+            );
+       } 
+    }
 
-}
-
-public function profile()
-{
-    return response()->json($this->guard()->user());
-
-}
-
-public function refresh()
-{
-    return $this->respondWithToken($this->guard()->refresh());
-}
 }
 
 

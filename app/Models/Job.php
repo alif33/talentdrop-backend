@@ -10,7 +10,10 @@ class Job extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title'
+        'job_title',
+        'job_slug',
+        'job_bounty',
+        'company_id',
     ];
 
     public function tags()

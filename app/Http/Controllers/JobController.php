@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Job;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class JobController extends Controller
 {
@@ -13,13 +14,20 @@ class JobController extends Controller
         return Job::orderBy('id', 'DESC')->get();
     }
 
+    public function show($id)
+    {
+        return Job::findOrFail(intval($id));
+    }
+
     public function store(Request $request)
     {   
 
         $validator = Validator::make(
             $request->all(),
             [
-                'title' => 'required|string|between:2,30|unique:jobs',
+                'job_title' => 'required|string|between:2,30|unique:jobs',
+                'job_bounty' => 'required|numeric',
+                'company_id' => 'required|numeric'
             ]
         );
 
@@ -32,6 +40,9 @@ class JobController extends Controller
 
         $job = Job::create(
             array_merge(
+                [
+                    'job_slug' => Str::slug($request->job_name, '-')
+                ],
                 $validator->validated()
             )
         );
